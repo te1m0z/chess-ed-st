@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  login     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model JwtAccessToken {
+  id          Int      @id @default(autoincrement())
+  jti         String   @unique
+  fingerprint String
+  expires     DateTime
+
+  @@map("jwt_access_tokens")
+}
+
+model JwtRefreshToken {
+  id          Int      @id @default(autoincrement())
+  jti         String   @unique
+  fingerprint String
+  expires     DateTime
+
+  @@map("jwt_refresh_tokens")
+} 
