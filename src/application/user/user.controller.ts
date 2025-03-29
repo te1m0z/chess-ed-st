@@ -1,9 +1,12 @@
-import { Controller, Get } from '@nestjs/common'
+import { Controller, Get, Request, UseGuards } from '@nestjs/common'
+import { AuthGuard } from '@/application/auth/guards/auth.guard'
+// import { JwtPayload } from '@/application/auth/types'
 
 @Controller('user')
 export class UserController {
-  @Get()
-  findAll(): string {
-    return 'This action returns all cats'
+  @Get('profile')
+  @UseGuards(AuthGuard)
+  getProfile(@Request() req) {
+    return req.user
   }
 }

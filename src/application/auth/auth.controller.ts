@@ -1,7 +1,6 @@
-import { Controller, Post, Body, HttpStatus, HttpCode, UseGuards, Get, Request } from '@nestjs/common'
-import { AuthGuard } from '@/infrastructure/auth'
+import { Controller, Post, Body } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { LoginDto, RegisterDto } from './dto/auth.dto'
+import { LoginDto, RegisterDto } from './dto'
 
 @Controller('auth')
 export class AuthController {
@@ -9,10 +8,12 @@ export class AuthController {
 
   @Post('register')
   register(@Body() body: RegisterDto) {
-    return this.authService.register(body.login, body.password)
+    return this.authService.register({
+      login: body.login,
+      password: body.password
+    })
   }
 
-  @HttpCode(HttpStatus.OK)
   @Post('login')
   login(@Body() body: LoginDto) {
     return this.authService.login({
@@ -21,9 +22,11 @@ export class AuthController {
     })
   }
 
-  @UseGuards(AuthGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.user
+  @Post('update-access')
+  updateAccess(@Body() body: LoginDto) {
+    return this.authService.login({
+      login: body.login,
+      password: body.password
+    })
   }
 }

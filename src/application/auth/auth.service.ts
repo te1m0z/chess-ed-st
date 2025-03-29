@@ -1,22 +1,40 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { compare } from 'bcrypt'
-import type { LoginPayload } from '@/core/auth'
+import type { LoginPayload, RegisterPayload } from '@/core/auth'
 import { UserService } from '@/application/user'
-import { LoginResponseDto } from './dto'
+import { AuthSuccessDto } from './dto'
 
 @Injectable()
-export class  AuthService {
+export class AuthService {
   constructor(
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly userService: UserService
   ) {}
 
-  async register(login: string, password: string) {
-    return this.userService.findByLogin
+  async register({ login, password }: RegisterPayload): Promise<AuthSuccessDto> {
+    // пытаемся найти юзера по логину
+    const user = await this.userService.findByLogin(login)
+
+    if (user) throw new BadRequestException('User already exists')
+
+    // создаём нового юзера
+    const newUser = await this.userService.create(login, password)
+
+    // генерируем токены
+    const payload = { sub: newUser.id, login: newUser.login }
+    const access_token = await this.jwtService.signAsync(payload)
+
+    return {
+      user: {
+        id: newUser.id,
+        login: newUser.login
+      },
+      access_token
+    }
   }
 
-  async login({ login, password }: LoginPayload): Promise<LoginResponseDto> {
+  async login({ login, password }: LoginPayload): Promise<AuthSuccessDto> {
     // пытаемся найти юзера по логину
     const user = await this.userService.findByLogin(login)
 
@@ -38,5 +56,9 @@ export class  AuthService {
       },
       access_token
     }
+  }
+
+  async updateAccessToken() {
+    
   }
 }

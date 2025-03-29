@@ -1,4 +1,4 @@
-export interface LoginResponseDto {
+export class AuthSuccessDto {
   user: {
     id: number
     login: string

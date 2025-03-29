@@ -1,24 +1,25 @@
-import { Module } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+import { forwardRef, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
-import { AuthService } from './auth.service'
+import { ConfigService } from '@nestjs/config'
+import { UserModule } from '@/application/user'
 import { AuthController } from './auth.controller'
-import { UserModule } from '../user/user.module'
-import { AuthGuard } from '@/infrastructure/auth/auth.guard'
+import { AuthService } from './auth.service'
+import { AuthGuard } from './guards'
 
+// задача модуля - поддержка сессии авторизации
 @Module({
   imports: [
-    UserModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '60s' }
       })
-    })
+    }),
+    forwardRef(() => UserModule)
   ],
-  providers: [AuthService, AuthGuard],
   controllers: [AuthController],
-  exports: [AuthService, AuthGuard]
+  providers: [AuthService, AuthGuard],
+  exports: [AuthGuard]
 })
 export class AuthModule {}

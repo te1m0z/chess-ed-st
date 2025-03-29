@@ -9,4 +9,8 @@ export class UserService {
   async findByLogin(login: string): Promise<User | null> {
     return this.userRepo.findByLogin(login)
   }
+
+  async create(login: string, password: string): Promise<User> {
+    return this.userRepo.create(login, password)
+  }
 }

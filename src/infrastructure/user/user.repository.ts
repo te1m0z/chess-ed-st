@@ -12,12 +12,9 @@ export class UserRepository implements IUserRepository {
     return user ? new User(user.id, user.login, user.password) : null
   }
 
-  async create(user: User) {
+  async create(login: string, password: string) {
     const created = await this.prisma.user.create({
-      data: {
-        login: user.login,
-        password: user.password
-      }
+      data: { login, password }
     })
 
     return new User(created.id, created.login, created.password)
