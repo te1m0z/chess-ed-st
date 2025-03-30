@@ -1,12 +1,12 @@
 import { Controller, Get, Request, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@/application/auth/guards/auth.guard'
-// import { JwtPayload } from '@/application/auth/types'
+import { Request as ERequest } from 'express'
 
 @Controller('user')
 export class UserController {
   @Get('profile')
   @UseGuards(AuthGuard)
-  getProfile(@Request() req) {
+  getProfile(@Request() req: ERequest) {
     return req.user
   }
 }

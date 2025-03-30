@@ -1,4 +1,4 @@
-export class AuthSuccessDto {
+export class UserCredentionalsDto {
   user: {
     id: number
     login: string

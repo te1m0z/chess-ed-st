@@ -3,7 +3,8 @@ import { JwtService } from '@nestjs/jwt'
 import { compare } from 'bcrypt'
 import type { LoginPayload, RegisterPayload } from '@/core/auth'
 import { UserService } from '@/application/user'
-import { AuthSuccessDto } from './dto'
+import { UserCredentionalsDto } from './dto'
+import type { JwtPayload } from './interfaces/jwt-payload.interface'
 
 @Injectable()
 export class AuthService {
@@ -12,7 +13,7 @@ export class AuthService {
     private readonly userService: UserService
   ) {}
 
-  async register({ login, password }: RegisterPayload): Promise<AuthSuccessDto> {
+  async register({ login, password }: RegisterPayload): Promise<UserCredentionalsDto> {
     // пытаемся найти юзера по логину
     const user = await this.userService.findByLogin(login)
 
@@ -21,8 +22,9 @@ export class AuthService {
     // создаём нового юзера
     const newUser = await this.userService.create(login, password)
 
-    // генерируем токены
-    const payload = { sub: newUser.id, login: newUser.login }
+    // генерируем токен
+    const payload: JwtPayload = { id: newUser.id, login: newUser.login }
+
     const access_token = await this.jwtService.signAsync(payload)
 
     return {
@@ -34,7 +36,7 @@ export class AuthService {
     }
   }
 
-  async login({ login, password }: LoginPayload): Promise<AuthSuccessDto> {
+  async login({ login, password }: LoginPayload): Promise<UserCredentionalsDto> {
     // пытаемся найти юзера по логину
     const user = await this.userService.findByLogin(login)
 
@@ -45,7 +47,7 @@ export class AuthService {
 
     if (!passwordMatch) throw new UnauthorizedException('Invalid credentials')
 
-    const payload = { sub: user.id, login: user.login }
+    const payload: JwtPayload = { id: user.id, login: user.login }
 
     const access_token = await this.jwtService.signAsync(payload)
 
@@ -56,9 +58,5 @@ export class AuthService {
       },
       access_token
     }
-  }
-
-  async updateAccessToken() {
-    
   }
 }

@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Request } from 'express'
+import { JwtPayload } from '../interfaces/jwt-payload.interface'
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -10,8 +11,8 @@ export class AuthGuard implements CanActivate {
     private readonly configService: ConfigService
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest()
+  async canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest<Request>()
     const token = this.extractTokenFromHeader(request)
 
     if (!token) {
@@ -19,11 +20,12 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_SECRET')
+      const payload: JwtPayload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get('JWT_SECRET')
       })
 
-      request['user'] = payload
+      request['token'] = token
+      request['user'] = { id: payload.id, login: payload.login }
     } catch {
       throw new UnauthorizedException('Invalid token')
     }

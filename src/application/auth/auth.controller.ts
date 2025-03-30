@@ -21,12 +21,4 @@ export class AuthController {
       password: body.password
     })
   }
-
-  @Post('update-access')
-  updateAccess(@Body() body: LoginDto) {
-    return this.authService.login({
-      login: body.login,
-      password: body.password
-    })
-  }
 }

@@ -15,21 +15,3 @@ model User {
 
   @@map("users")
 }
-
-model JwtAccessToken {
-  id          Int      @id @default(autoincrement())
-  jti         String   @unique
-  fingerprint String
-  expires     DateTime
-
-  @@map("jwt_access_tokens")
-}
-
-model JwtRefreshToken {
-  id          Int      @id @default(autoincrement())
-  jti         String   @unique
-  fingerprint String
-  expires     DateTime
-
-  @@map("jwt_refresh_tokens")
-} 
