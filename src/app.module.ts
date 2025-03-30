@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { AuthModule } from '@/application/auth'
 import { UserModule } from '@/application/user'
+import { GameModule } from '@/application/game/game.module'
 
 @Module({
   imports: [
@@ -13,11 +14,12 @@ import { UserModule } from '@/application/user'
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '60s' }
+        signOptions: { expiresIn: '10m' }
       })
     }),
     AuthModule,
-    UserModule
+    UserModule,
+    GameModule
   ]
 })
 export class AppModule {}
