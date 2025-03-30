@@ -13,11 +13,13 @@ async function bootstrap() {
   const port = configService.get('PORT', 3000)
 
   // Включаем глобальную валидацию
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // Удаляет неопределенные свойства
-    transform: true, // Автоматически преобразует типы
-    forbidNonWhitelisted: true // Запрещает неопределенные свойства
-  }))
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true
+    })
+  )
 
   await app.listen(port)
 

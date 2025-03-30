@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { compare, hash } from 'bcrypt'
-import type { LoginPayload, RegisterPayload } from '@/core/auth'
-import { UserService } from '@/application/user'
-import { UserCredentionalsDto } from './dto'
+import { UserService } from '@/application/user/user.service'
 import type { JwtPayload } from './interfaces/jwt-payload.interface'
+import { UserCredentionalsDto } from './dto/user-credentionals.dto'
+import { RegisterDto } from './dto/register.dto'
+import { LoginDto } from './dto/login.dto'
 
 @Injectable()
 export class AuthService {
@@ -13,7 +14,7 @@ export class AuthService {
     private readonly userService: UserService
   ) {}
 
-  async register({ login, password }: RegisterPayload): Promise<UserCredentionalsDto> {
+  async register({ login, password }: RegisterDto): Promise<UserCredentionalsDto> {
     // пытаемся найти юзера по логину
     const user = await this.userService.findByLogin(login)
 
@@ -38,7 +39,7 @@ export class AuthService {
     }
   }
 
-  async login({ login, password }: LoginPayload): Promise<UserCredentionalsDto> {
+  async login({ login, password }: LoginDto): Promise<UserCredentionalsDto> {
     // пытаемся найти юзера по логину
     const user = await this.userService.findByLogin(login)
 

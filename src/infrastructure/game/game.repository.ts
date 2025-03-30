@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { GameStatus } from '@prisma/client'
 import { IGameRepository } from '@/core/game/interfaces/game.repository'
 import { Game } from '@/core/game/entities/game.entity'
 import { Move } from '@/core/game/entities/move.entity'
@@ -28,7 +29,7 @@ export class GameRepository implements IGameRepository {
           id: snapshot.id,
           white_id: game.whitePlayerId,
           black_id: game.blackPlayerId,
-          status: 'WAITING'
+          status: GameStatus.WAITING
         }
       })
       return
@@ -49,7 +50,10 @@ export class GameRepository implements IGameRepository {
       }),
       this.prisma.game.update({
         where: { id: snapshot.id },
-        data: { status: snapshot.isFinished ? 'FINISHED' : 'IN_PROGRESS', winner_id: snapshot.winnerId }
+        data: {
+          status: snapshot.isFinished ? GameStatus.FINISHED : GameStatus.IN_PROGRESS,
+          winner_id: snapshot.winnerId
+        }
       })
     ])
   }
