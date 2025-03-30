@@ -8,10 +8,46 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  login     String   @unique
-  password  String
-  createdAt DateTime @default(now()) @map("created_at")
+  id         Int      @id @default(autoincrement())
+  login      String   @unique
+  password   String
+  whiteGames Game[]   @relation("WhitePlayer")
+  blackGames Game[]   @relation("BlackPlayer")
+  moves      Move[]
+  created_at DateTime @default(now())
 
   @@map("users")
+}
+
+model Game {
+  id          String     @id @default(cuid())
+  playerWhite User       @relation("WhitePlayer", fields: [white_id], references: [id])
+  white_id    Int
+  playerBlack User       @relation("BlackPlayer", fields: [black_id], references: [id])
+  black_id    Int
+  moves       Move[]
+  status      GameStatus @default(WAITING)
+  winner_id   Int?
+  created_at  DateTime   @default(now())
+
+  @@map("games")
+}
+
+model Move {
+  id         String   @id @default(cuid())
+  game       Game     @relation(fields: [game_id], references: [id])
+  game_id    String
+  player     User     @relation(fields: [player_id], references: [id])
+  player_id  Int
+  from       String
+  to         String
+  created_at DateTime @default(now())
+
+  @@map("moves")
+}
+
+enum GameStatus {
+  WAITING
+  IN_PROGRESS
+  FINISHED
 }
