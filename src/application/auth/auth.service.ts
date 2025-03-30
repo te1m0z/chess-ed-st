@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { compare } from 'bcrypt'
+import { compare, hash } from 'bcrypt'
 import type { LoginPayload, RegisterPayload } from '@/core/auth'
 import { UserService } from '@/application/user'
 import { UserCredentionalsDto } from './dto'
@@ -19,8 +19,10 @@ export class AuthService {
 
     if (user) throw new BadRequestException('User already exists')
 
+    const passwordHashed = await hash(password, 10)
+
     // создаём нового юзера
-    const newUser = await this.userService.create(login, password)
+    const newUser = await this.userService.create(login, passwordHashed)
 
     // генерируем токен
     const payload: JwtPayload = { id: newUser.id, login: newUser.login }

@@ -1,54 +1,75 @@
-import { Figure } from '../value-objects/figure.vo'
-import { Move } from '../value-objects/move.vo'
+import { Figure } from './figure.entity'
+import { Move } from './move.entity'
 import { GameColor } from '../config/color.enum'
 import { GameFigureType } from '../config/figure.enum'
 
 export class Game {
+  // игральная доска
   private board: Record<string, Figure | null> = {}
+  // кто сейчас ходит
   private currentTurn: GameColor = GameColor.WHITE
+  // закончена ли партия
   private isFinished = false
+  // ID победителя
   private winnerId: number | null = null
 
   constructor(
+    // ID игры
     public readonly id: string,
+    // ID игрока за белых
     public readonly whitePlayerId: number,
+    // ID игрока за черных
     public readonly blackPlayerId: number,
+    // Ходы в игре
     private readonly moves: Move[] = []
   ) {
     this.initBoard()
+
     for (const move of this.moves) {
       this.applyMove(move)
     }
   }
 
   private initBoard() {
-    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    const ranks = [1, 2, 3, 4, 5, 6, 7, 8]
-    for (const f of files) for (const r of ranks) this.board[`${f}${r}`] = null
+    const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    const numbers = [1, 2, 3, 4, 5, 6, 7, 8]
 
-    const setup = (color: GameColor, back: number, pawn: number) => {
-      const types: [string, GameFigureType][] = [
-        ['a', GameFigureType.ROOK],
-        ['b', GameFigureType.KNIGHT],
-        ['c', GameFigureType.BISHOP],
-        ['d', GameFigureType.QUEEN],
-        ['e', GameFigureType.KING],
-        ['f', GameFigureType.BISHOP],
-        ['g', GameFigureType.KNIGHT],
-        ['h', GameFigureType.ROOK]
-      ]
-
-      for (const [file, type] of types) {
-        this.board[`${file}${back}`] = new Figure(color, type)
-      }
-
-      for (const file of files) {
-        this.board[`${file}${pawn}`] = new Figure(color, GameFigureType.PAWN)
+    for (const l of letters) {
+      for (const n of numbers) {
+        this.board[`${l}${n}`] = null
       }
     }
 
-    setup(GameColor.WHITE, 1, 2)
-    setup(GameColor.BLACK, 8, 7)
+    const figuresMap: Record<string, GameFigureType> = {
+      a: GameFigureType.ROOK,
+      b: GameFigureType.KNIGHT,
+      c: GameFigureType.BISHOP,
+      d: GameFigureType.QUEEN,
+      e: GameFigureType.KING,
+      f: GameFigureType.BISHOP,
+      g: GameFigureType.KNIGHT,
+      h: GameFigureType.ROOK
+    }
+
+    // белые фигуры
+    for (const letter in figuresMap) {
+      this.board[`${letter}${1}`] = new Figure(GameColor.WHITE, figuresMap[letter])
+    }
+
+    // белые пешки
+    for (const letter of letters) {
+      this.board[`${letter}${2}`] = new Figure(GameColor.WHITE, GameFigureType.PAWN)
+    }
+
+    // черные фигуры
+    for (const letter in figuresMap) {
+      this.board[`${letter}${8}`] = new Figure(GameColor.BLACK, figuresMap[letter])
+    }
+
+    // черные пешки
+    for (const letter of letters) {
+      this.board[`${letter}${7}`] = new Figure(GameColor.BLACK, GameFigureType.PAWN)
+    }
   }
 
   private getColorByPlayerId(playerId: number): GameColor {
@@ -58,25 +79,39 @@ export class Game {
   }
 
   public makeMove(move: Move): void {
-    if (this.isFinished) throw new Error('Игра завершена')
-    const color = this.getColorByPlayerId(move.playerId)
-    if (color !== this.currentTurn) throw new Error('Сейчас ход соперника')
+    if (this.isFinished) {
+      throw new Error('Игра завершена')
+    }
 
-    const piece = this.board[move.from]
-    if (!piece) throw new Error('Нет фигуры по координате')
-    if (piece.color !== color) throw new Error('Нельзя ходить чужой фигурой')
+    const color = this.getColorByPlayerId(move.playerId)
+
+    if (color !== this.currentTurn) {
+      throw new Error('Сейчас ход соперника')
+    }
+
+    const figure = this.board[move.from]
+
+    if (!figure) {
+      throw new Error('Нет фигуры по координате')
+    }
+
+    if (figure.color !== color) {
+      throw new Error('Нельзя ходить чужой фигурой')
+    }
 
     const destination = this.board[move.to]
+    
     if (destination && destination.color === color) {
       throw new Error('Нельзя бить свою фигуру')
     }
 
-    if (!this.isValidBasicMove(piece, move.from, move.to)) {
+    if (!this.isValidBasicMove(figure, move.from, move.to)) {
       throw new Error('Недопустимый ход (простая проверка)')
     }
 
     // Применить ход
     this.applyMove(move)
+    // Добавить ход
     this.moves.push(move)
 
     // Проверка на конец

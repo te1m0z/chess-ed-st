@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { IGameRepository } from '@/core/game/interfaces/game.repository'
 import { Game } from '@/core/game/entities/game.entity'
-import { Move } from '@/core/game/value-objects/move.vo'
+import { Move } from '@/core/game/entities/move.entity'
 import { PrismaService } from '@/infrastructure/prisma/prisma.service'
 
 @Injectable()

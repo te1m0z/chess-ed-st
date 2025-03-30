@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common'
+import { ForbiddenException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import { Game } from '@/core/game/entities/game.entity'
-import { Move } from '@/core/game/value-objects/move.vo'
+import { Move } from '@/core/game/entities/move.entity'
 import { GameRepository } from '@/infrastructure/game/game.repository'
 
 @Injectable()
@@ -25,11 +25,14 @@ export class GameService {
 
   async playMove({ gameId, userId, from, to }: { gameId: string; userId: number; from: string; to: string }) {
     const game = await this.gameRepo.findById(gameId)
-    if (!game) throw new Error('Game not found')
+
+    if (!game) {
+      throw new NotFoundException('Игра не найдена')
+    }
 
     // Проверка, что пользователь участвует в партии
     if (userId !== game.whitePlayerId && userId !== game.blackPlayerId) {
-      throw new Error('Вы не участвуете в этой партии')
+      throw new ForbiddenException('Вы не участвуете в этой партии')
     }
 
     // Проверка, что это именно его ход
@@ -37,12 +40,20 @@ export class GameService {
     const expectedPlayerId = currentColor === 'white' ? game.whitePlayerId : game.blackPlayerId
 
     if (userId !== expectedPlayerId) {
-      throw new Error('Сейчас не ваш ход')
+      throw new ForbiddenException('Сейчас не ваш ход')
     }
 
     // Создаём и применяем ход
     const move = new Move(from, to, userId)
-    game.makeMove(move)
+
+    try {
+      game.makeMove(move)
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new BadRequestException(e.message)
+      }
+      throw new BadRequestException('Неизвестная ошибка')
+    }
 
     // Сохраняем изменения
     await this.gameRepo.save(game)
